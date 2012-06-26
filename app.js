@@ -60,9 +60,11 @@ io.sockets.on('connection', function(socket){
 		files[data.name].content += data.data;
 		files[data.name].latestChunk = data.data;
 		if(files[data.name].chunk < files[data.name].chunkCount) {
-				socket.emit('reqChunk', {
+				setTimeout(function(){
+					socket.emit('reqChunk', {
 					offset: files[data.name].chunk
-				});
+					});
+				}, 100);
 		}
 	});
 
