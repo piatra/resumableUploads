@@ -1,5 +1,6 @@
 (function () {
 	//"use strict";
+	var chunk = 272144;
 	var socket = io.connect('http://localhost:3000')
 		, file
 		, output = document.getElementById('output')
@@ -12,6 +13,7 @@
 	var startUpload = function(e) {
 		e.preventDefault();
 		fileReader.onload = function(evnt) {
+			console.log('uploading');
 			socket.emit('upload', { 
 				name : file.name,
 				data : evnt.target.result
@@ -24,13 +26,10 @@
 	};
 
 	socket.on('reqChunk', function(data){
-		var place = data.offset * 524288; //The Next Blocks Starting Position
-		console.log(place);
-		var nFile; //The Variable that will hold the new Block of Data
-		if(file.webkitSlice) 
-			nFile = file.webkitSlice(place, place + Math.min(524288, (file.size-place)));
-		else
-			nFile = file.mozSlice(place, place + Math.min(524288, (file.size-place)));
+		console.log('reqChunk');
+		var place = data.offset * chunk; //The Next Blocks Starting Position
+		var blob = new Blob([file], {"type" : file.type});
+		var nFile = blob.slice(place, place + Math.min(chunk, (file.size-place)));
 		fileReader.readAsBinaryString(nFile);
 	});
 
@@ -38,10 +37,9 @@
 		output.innerHTML += '<li>' + data.message + ' ' + data.name + '</li>';
 		if(data.data)
 			output.innerHTML += '<li>chunk: ' + data.chunk + '/' + parseInt(data.chunkCount, 10) +'</li>';
-			//output.innerHTML += '<p>data: ' + data.data + '</p>';
 			progress(data.chunk/parseInt(data.chunkCount, 10));
 		if(data.size)
-			output.innerHTML += '<li>size: ' + data.chunk * 524288 + '/' + data.size + '</li>';
+			output.innerHTML += '<li>size: ' + data.chunk * chunk + '/' + data.size + '</li>';
 	});
 
 	var progress = function(p) {

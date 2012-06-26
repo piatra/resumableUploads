@@ -45,7 +45,7 @@ io.sockets.on('connection', function(socket){
 				name : data.name,
 				size: data.size,
 				chunk: 0,
-				chunkCount: data.size/524288,
+				chunkCount: data.size/272144,
 				content: '',
 				latestChunk : ''
 			};
@@ -60,11 +60,12 @@ io.sockets.on('connection', function(socket){
 		files[data.name].content += data.data;
 		files[data.name].latestChunk = data.data;
 		if(files[data.name].chunk < files[data.name].chunkCount) {
-				setTimeout(function(){
+				process.nextTick(function(){
+					console.log('requesting more');
 					socket.emit('reqChunk', {
 					offset: files[data.name].chunk
 					});
-				}, 100);
+				});
 		}
 	});
 
